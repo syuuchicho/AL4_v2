@@ -53,6 +53,10 @@ class GameScene {
 	void Draw();
 
   private: // メンバ変数
+	  bool hit = false;
+	  bool jumpFlag = false;
+	  int scene = 0;
+
 	DirectXCommon* dxCommon = nullptr;
 	Input* input = nullptr;
 	DebugText debugText;
@@ -66,13 +70,18 @@ class GameScene {
 	Model* modelSkydome = nullptr;
 	Model* modelGround = nullptr;
 	Model* modelFighter = nullptr;
+	Model* modelIcoRed = nullptr;
 
 	Object3d* objSkydome = nullptr;
 	Object3d* objGround = nullptr;
 	Object3d* objFighter = nullptr;
+	Object3d* objIcoRed = nullptr;
 
 	//当たり判定　球
 	Sphere sphere;
 	//当たり判定　平面
 	Plane plane;
+
+	
+	uint32_t jumpTime = 200;
 };

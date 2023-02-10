@@ -17,9 +17,11 @@ GameScene::~GameScene()
 	delete objSkydome;
 	delete objGround;
 	delete objFighter;
+	delete objIcoRed;
 	delete modelSkydome;
 	delete modelGround;
 	delete modelFighter;
+	delete modelIcoRed;
 	delete camera;
 }
 
@@ -40,14 +42,14 @@ void GameScene::Initialize(DirectXCommon* dxCommon, Input* input)
 	// テクスチャ読み込み
 	Sprite::LoadTexture(1, L"Resources/background.png");
 
-    // カメラ生成
+	// カメラ生成
 	camera = new DebugCamera(WinApp::kWindowWidth, WinApp::kWindowHeight, input);
 
 	// カメラ注視点をセット
-	camera->SetTarget({0, 1, 0});
+	camera->SetTarget({ 0, 1, 0 });
 	camera->SetDistance(3.0f);
 
-    // 3Dオブジェクトにカメラをセット
+	// 3Dオブジェクトにカメラをセット
 	Object3d::SetCamera(camera);
 
 	// 背景スプライト生成
@@ -56,17 +58,22 @@ void GameScene::Initialize(DirectXCommon* dxCommon, Input* input)
 	objSkydome = Object3d::Create();
 	objGround = Object3d::Create();
 	objFighter = Object3d::Create();
-
+	objIcoRed = Object3d::Create();
 	// テクスチャ2番に読み込み
 	Sprite::LoadTexture(2, L"Resources/texture.png");
 
 	modelSkydome = Model::CreateFromOBJ("skydome");
 	modelGround = Model::CreateFromOBJ("ground");
-	modelFighter = Model::CreateFromOBJ("chr_sword");
+	//modelFighter = Model::CreateFromOBJ("chr_sword");
+	//ico球
+	modelFighter = Model::CreateFromOBJ("icosphere");
+	modelIcoRed = Model::CreateFromOBJ("icoRed");
+
 
 	objSkydome->SetModel(modelSkydome);
 	objGround->SetModel(modelGround);
 	objFighter->SetModel(modelFighter);
+	objIcoRed->SetModel(modelIcoRed);
 
 	//球の初期値を設定
 	sphere.center = XMVectorSet(0, 2, 0, 1);//中心点座標
@@ -74,24 +81,58 @@ void GameScene::Initialize(DirectXCommon* dxCommon, Input* input)
 	//平面の初期値を設定
 	plane.normal = XMVectorSet(0, 1, 0, 0);//法線ベクトル
 	plane.distance = 0.0f;//原点(0,0,0)からの距離
+
+
 }
 
 void GameScene::Update()
 {
+	//球移動
+	XMVECTOR moveX = XMVectorSet(0.01f, 0, 0, 0);
+	XMVECTOR moveY = XMVectorSet(0, 0.01f, 0, 0);
+
+
 	camera->Update();
+	objFighter->GetPosX(sphere.center.m128_f32[0]);
+	objFighter->GetPosY(sphere.center.m128_f32[1]);
+	objFighter->GetPosZ(sphere.center.m128_f32[2]);
+	objIcoRed->GetPosX(sphere.center.m128_f32[0]);
+	objIcoRed->GetPosY(sphere.center.m128_f32[1]);
+	objIcoRed->GetPosZ(sphere.center.m128_f32[2]);
 
 	objSkydome->Update();
 	objGround->Update();
 	objFighter->Update();
+	objIcoRed->Update();
 
-	//球移動
-	XMVECTOR moveY = XMVectorSet(0, 0.01f, 0, 0);
+	if (scene == 0)
+	{
+		sphere.center -= moveY;
+	}
+	else if (scene == 1)
+	{
+		sphere.center += moveY;
+		jumpTime--;
+	}
+	if (jumpTime <= 0)
+	{
+		jumpTime = 200;
+		scene = 0;
+	}
+
+	if (hit)
+	{
+		scene = 1;
+	}
+
 	if (input->PushKey(DIK_NUMPAD8)) { sphere.center += moveY; }
 	else if (input->PushKey(DIK_NUMPAD2)) { sphere.center -= moveY; }
 
-	XMVECTOR moveX = XMVectorSet(0.01f, 0, 0, 0);
+
 	if (input->PushKey(DIK_NUMPAD6)) { sphere.center += moveX; }
 	else if (input->PushKey(DIK_NUMPAD4)) { sphere.center -= moveX; }
+
+
 
 	//stringstreamで変数の値を埋め込んで整形する
 	std::ostringstream spherestr;
@@ -104,7 +145,7 @@ void GameScene::Update()
 	debugText.Print(spherestr.str(), 50, 180, 1.0f);
 
 	//球と平面の当たり判定
-	bool hit = Collision::CheckSphere2Plane(sphere, plane);
+	hit = Collision::CheckSphere2Plane(sphere, plane);
 	if (hit) {
 		debugText.Print("HIT", 50, 200, 1.0f);
 	}
@@ -158,7 +199,14 @@ void GameScene::Draw()
 	// 3Dオブクジェクトの描画
 	objSkydome->Draw();
 	objGround->Draw();
-	objFighter->Draw();
+	if (hit)
+	{
+		objIcoRed->Draw();
+	}
+	else
+	{
+		objFighter->Draw();
+	}
 
 	/// <summary>
 	/// ここに3Dオブジェクトの描画処理を追加できる

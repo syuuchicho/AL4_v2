@@ -129,6 +129,11 @@ public: // メンバ関数
 
 	void SetBillboard(bool isBillboard) { this->isBillboard = isBillboard; }
 
+	void GetPosX(float x) { position.x = x; }
+	void GetPosY(float y) { position.y = y; }
+	void GetPosZ(float z) { position.z = z; }
+
+
 private: // メンバ変数
 	ComPtr<ID3D12Resource> constBuffB0; // 定数バッファ
 	// 色
